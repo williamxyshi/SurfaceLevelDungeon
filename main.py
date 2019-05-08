@@ -40,7 +40,7 @@ class Game:
 
     def _game_loop(self) -> None:
         mouse_grid_location = (-1, -1)
-        selecting = False
+        action_type = "select"
         while self.game_running:
             # remove event from the event queue
             event = pygame.event.poll()
@@ -52,20 +52,23 @@ class Game:
                 if event.button == 3:
                     self.mouse_pressed = True
                 if event.button == 1:
-                    selecting = True
+                    self.grid.select(mouse_grid_location, action_type)
+                    action_type = 'select'
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.mouse_pressed = False
-                if selecting:
-                    self.grid.select_tile(mouse_grid_location)
-                    selecting = False
             elif event.type == pygame.MOUSEMOTION:
-                selecting = False
                 if self.mouse_pressed:
                     self.grid.pan(pygame.mouse.get_rel())
                 else:
                     #  update the location of the mouse for get_rel
                     pygame.mouse.get_rel()
-
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_e:
+                    if action_type == 'build':
+                        action_type = 'select3'
+                    else:
+                        action_type = 'build'
+                    self.grid.unselect()
             # Calculate the mouse's position on the hex grid
             mouse_position = pygame.mouse.get_pos()
             mouse_grid_location = self.grid.find_mouse_grid_location(mouse_position)

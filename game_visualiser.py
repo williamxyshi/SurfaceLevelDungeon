@@ -1,6 +1,9 @@
 import pygame
 from game_map import Grid
 from typing import Tuple
+from game_unit import Unit
+import os
+
 
 class Visualizer:
     """A class that creates and updates the screen
@@ -14,12 +17,16 @@ class Visualizer:
         Object that stores map information
     screen:
         !!!!!
+    highlight_screen:
+        Screen that is slightly transparent
     """
 
     width: int
     height: int
     grid: Grid
     screen: pygame.Surface
+    highlight_screen: pygame.Surface
+    highlight_image: pygame.image
 
     def __init__(self, width: int, height: int, grid: Grid) -> None:
         self.game_running = True
@@ -27,6 +34,12 @@ class Visualizer:
         self.height = height
         self.grid = grid
         self.screen = pygame.display.set_mode((self.width, self.height))
+        # Create highlight screen
+        self.highlight_screen = pygame.Surface((120, 104))
+        self.highlight_screen.set_colorkey((0, 0, 0))
+        highlight_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\highlight.png'))
+        self.highlight_screen.blit(highlight_image, (0, 0))
+        self.highlight_screen.set_alpha(100)
 
     def render_display(self, mouse_grid_location: Tuple[int, int]) -> None:
         """Render the game to the screen
@@ -50,10 +63,13 @@ class Visualizer:
             for tile in sublist:
                 if not tile.is_empty:
                     self.screen.blit(tile.land_image, (tile.vertices[0][0] - 30, tile.vertices[0][1]))
+                    if tile.supported_unit is not None:
+                        self.screen.blit(tile.supported_unit.unit_image, (tile.vertices[0][0] - 30, tile.vertices[0][1]))
 
         # Draw tile outlines
         hovered_tile = None
         selected_tile = None
+        highlighted_tiles = []
         x = 0
         for sublist in self.grid.tiles:
             y = 0
@@ -68,8 +84,15 @@ class Visualizer:
                         pygame.draw.lines(self.screen, (0, 0, 0), False, tile.vertices[0:5], 1)
                         pygame.draw.lines(self.screen, (0, 0, 0), False,
                                           [tile.vertices[0], tile.vertices[5], tile.vertices[4]], 1)
+                    if tile.highlighted:
+                        highlighted_tiles.append(tile)
                 y += 1
             x += 1
+
+        for tile in highlighted_tiles:
+            if not tile.is_empty:
+                self.screen.blit(self.highlight_screen, (tile.vertices[0][0] - 30, tile.vertices[0][1]))
+
         if hovered_tile is not None:
             # Use draw lines instead of draw polygon to avoid differently drawn diagonal lines
             pygame.draw.lines(self.screen, (255, 255, 255), False, hovered_tile.vertices[0:5], 1)
