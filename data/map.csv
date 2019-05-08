@@ -1,4 +1,5 @@
 6,3
+tower_test
 0,0,forest_test,None
 0,1,forest_test,None
 1,0,mountain_test,None
@@ -6,7 +7,7 @@
 2,0,forest_test,None
 2,1,mountain_test,None
 2,2,forest_test,worker_test
-3,0,mountain_test,None
+3,0,mountain_test,worker_test
 3,1,forest_test,None
 3,2,forest_test,None
 4,0,mountain_test,None

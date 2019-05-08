@@ -50,7 +50,6 @@ class Tile:
         self.building = building
         self.adjacent_tiles = []
         self.supported_unit = supported_unit
-        print(self.supported_unit)
 
     def pan(self, movement: Tuple[int, int]) -> None:
         """Update the vertices of a tile after a pan
@@ -200,29 +199,41 @@ class Grid:
                 if not tile.is_empty:
                     tile.pan(movement)
 
-    def select(self, mouse_grid_location: Tuple[int, int], action_type: str) -> None:
+    def left_click(self, mouse_grid_location: Tuple[int, int], action_type: str) -> None:
         clicked_tile = self._find_clicked_tile(mouse_grid_location)
         if action_type == 'select':
-            if clicked_tile is not None and self.selected_tile != clicked_tile:
-                if clicked_tile.highlighted and self.selected_unit is not None:
-                    clicked_tile.supported_unit = self.selected_unit
-                    self.selected_tile.supported_unit = None
-                self.unselect()
-                self.selected_tile = clicked_tile
-                self.selected_tile.selected = True
-                if self.selected_tile.supported_unit is not None:
-                    self.selected_unit = self.selected_tile.supported_unit
-                    for tile in self.selected_tile.adjacent_tiles:
-                        if not tile.is_empty:
-                            tile.highlighted = True
-            elif self.selected_tile is not None:
-                self.unselect()
-
+            self.handel_select(clicked_tile)
         elif action_type == 'build':
-            if clicked_tile is not None:
-                if not clicked_tile.building and clicked_tile.supported_unit is None:
-                    clicked_tile.building = True
-                    clicked_tile.land_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\' + 'tower_test' + '.png'))
+            self.handel_build(clicked_tile)
+
+    def right_click(self, mouse_grid_location: Tuple[int, int], action_type: str) -> None:
+        pass
+
+    def handel_select(self, clicked_tile: Tile) -> None:
+        if clicked_tile is not None and self.selected_tile != clicked_tile:
+            if clicked_tile.highlighted and self.selected_unit is not None:
+                clicked_tile.supported_unit = self.selected_unit
+                self.selected_tile.supported_unit = None
+            self.unselect()
+            self.selected_tile = clicked_tile
+            self.selected_tile.selected = True
+            if self.selected_tile.supported_unit is not None:
+                self.select_unit()
+        elif self.selected_tile is not None:
+            self.unselect()
+
+    def select_unit(self) -> None:
+        self.selected_unit = self.selected_tile.supported_unit
+        for tile in self.selected_tile.adjacent_tiles:
+            if not tile.is_empty and tile.supported_unit is None:
+                tile.highlighted = True
+
+    def handel_build(self, clicked_tile: Tile) -> None:
+        if clicked_tile is not None:
+            if not clicked_tile.building and clicked_tile.supported_unit is None:
+                clicked_tile.building = True
+                clicked_tile.land_image = pygame.image.load(
+                    os.path.join(os.path.dirname(__file__), 'images\\' + 'tower_test' + '.png'))
 
     def unselect(self) -> None:
         if self.selected_tile is not None:
