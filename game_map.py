@@ -216,6 +216,7 @@ class Grid:
                 self.handle_build(clicked_tile, to_build)
             return None
         else:
+            self.unselect()
             return self.sidebar.building_info[mouse_sidebar_location][0]
 
     def right_click(self, mouse_grid_location: Tuple[int, int], action_type: str) -> None:

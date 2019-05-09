@@ -63,6 +63,7 @@ class Game:
             elif event.type == pygame.MOUSEBUTTONUP:
                 if not panned and right_mouse_pressed:
                     self.grid.unselect()
+                    to_build = None
                 else:
                     panned = False
                 right_mouse_pressed = False

@@ -16,13 +16,13 @@ class Sidebar:
     def __init__(self, building_names: List[str]) -> None:
         self.building_info = []
         for name in building_names:
-            image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\' + name + '.png'))
+            image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\' + name + '_icon.png'))
             self.building_info.append((name, image))
 
     def find_mouse_sidebar_location(self, mouse_position: Tuple[int, int]) -> Optional[int]:
         """Finds the sidebar coordinates of the mouse
         """
-        if mouse_position[0] < 120 and mouse_position[1] < 104*len(self.building_info):
-            return mouse_position[1] // 104
+        if mouse_position[0] < 180 and 100 < mouse_position[1] < (65*len(self.building_info) + 100):
+            return (mouse_position[1]-100) // 65
         else:
             return None

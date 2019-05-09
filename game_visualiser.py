@@ -40,12 +40,20 @@ class Visualizer:
         self.sidebar = sidebar
         self.screen = pygame.display.set_mode((self.width, self.height))
         #self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
         # Create highlight screen
         self.highlight_screen = pygame.Surface((120, 104))
         self.highlight_screen.set_colorkey((0, 0, 0))
         highlight_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\highlight.png'))
         self.highlight_screen.blit(highlight_image, (0, 0))
         self.highlight_screen.set_alpha(100)
+
+        # Create sidebar background screen
+        self.sidebar_background_screen = pygame.Surface((180, 65))
+        self.sidebar_background_screen.set_colorkey((0, 0, 0))
+        highlight_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\sidebar_background.png'))
+        self.sidebar_background_screen.blit(highlight_image, (0, 0))
+        self.sidebar_background_screen.set_alpha(200)
 
     def render_display(self, mouse_grid_location: Tuple[int, int], mouse_sidebar_location: Optional[int], to_build: Optional[str]) -> None:
         """Render the game to the screen
@@ -115,15 +123,16 @@ class Visualizer:
         # Draw sidebar
         num = 0
         for building in self.sidebar.building_info:
-            rectangle = pygame.Rect(0, num*104, 120, 104)
+            self.screen.blit(self.sidebar_background_screen, (0, num*65+100))
+            rectangle = pygame.Rect(0, num*65+100, 180, 65)
             if num == mouse_sidebar_location:
                 pygame.draw.rect(self.screen, (255, 255, 255), rectangle, 2)
             else:
-                pygame.draw.rect(self.screen, (0, 0, 0), rectangle, 2)
+                pygame.draw.rect(self.screen, (85, 0, 111), rectangle, 2)
             if to_build is not None:
                 if to_build == building[0]:
                     pygame.draw.rect(self.screen, (219, 232, 101), rectangle, 3)
-            self.screen.blit(building[1], (0, num*104))
+            self.screen.blit(building[1], (0, num*65+100))
             num += 1
 
         # update the display
