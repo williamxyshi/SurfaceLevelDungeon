@@ -15,7 +15,7 @@ class Game:
         grid:
             Object that stores map information
         sidebar:
-            Object that stores building names and images
+            Object that stores building information
     """
 
     game_running: bool
@@ -34,17 +34,18 @@ class Game:
             map_lines = []
             for line in csv_reader:
                 map_lines.append(line)
-        self.grid = Grid(int(grid_dimensions[0]), int(grid_dimensions[1]), 60, map_lines)
         self.sidebar = Sidebar(building_names)
-        self.visualizer = Visualizer(1024, 768, self.grid)  # 1024, 768
+        self.grid = Grid(int(grid_dimensions[0]), int(grid_dimensions[1]), 60, map_lines, self.sidebar)
+        self.visualizer = Visualizer(1600, 900, self.grid, self.sidebar)  # 1024, 768
         pygame.init()
         self._game_loop()
 
     def _game_loop(self) -> None:
         mouse_grid_location = (-1, -1)
-        action_type = "select"
+        mouse_sidebar_location = None
         panned = False
         right_mouse_pressed = False
+        to_build = None
         while self.game_running:
             # remove event from the event queue
             event = pygame.event.poll()
@@ -57,8 +58,7 @@ class Game:
                 if event.button == 3:
                     right_mouse_pressed = True
                 if event.button == 1:
-                    self.grid.left_click(mouse_grid_location, action_type)
-                    action_type = 'select'
+                    to_build = self.grid.left_click(mouse_grid_location, mouse_sidebar_location, to_build)
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if not panned and right_mouse_pressed:
@@ -75,19 +75,12 @@ class Game:
                     #  update the location of the mouse for get_rel
                     pygame.mouse.get_rel()
 
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_e:
-                    if action_type == 'build':
-                        action_type = 'select'
-                    else:
-                        action_type = 'build'
-                    self.grid.unselect()
-
             # Calculate the mouse's position on the hex grid
             mouse_position = pygame.mouse.get_pos()
             mouse_grid_location = self.grid.find_mouse_grid_location(mouse_position)
+            mouse_sidebar_location = self.sidebar.find_mouse_sidebar_location(mouse_position)
 
-            self.visualizer.render_display(mouse_grid_location)
+            self.visualizer.render_display(mouse_grid_location, mouse_sidebar_location, to_build)
 
 
 if __name__ == '__main__':

@@ -3,7 +3,10 @@ from typing import List, Tuple, Optional
 #from __future__ import annotations
 import pygame
 import os
+from game_overlay import Sidebar
 from game_unit import Unit
+from game_building import Building
+
 
 class Tile:
     """Tile on the game map
@@ -20,8 +23,8 @@ class Tile:
         If this tile is selected
     highlighted:
         If this tile is highlighted
-    building:
-        If this tile is a building
+    supported_building:
+        Building on this tile
     supported_unit:
         Unit on this tile
     """
@@ -31,10 +34,11 @@ class Tile:
     land_image: pygame.image
     selected: bool
     highlighted: bool
-    building: bool
-    supported_unit: Unit
+    supported_building: Optional[Building]
+    supported_unit: Optional[Unit]
 
-    def __init__(self, vertices: List[List[int]] = None, land_name: str = None, building: bool = False, supported_unit: Unit = None) -> None:
+    def __init__(self, vertices: List[Tuple[int, int]] = None, land_name: str = None, supported_unit: Unit = None,
+                 supported_building: Building = None) -> None:
         if vertices is None:
             self.vertices = None
             self.is_empty = True
@@ -47,7 +51,7 @@ class Tile:
             self.land_image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\' + land_name + '.png'))
             self.selected = False
             self.highlighted = False
-        self.building = building
+        self.supported_building = supported_building
         self.adjacent_tiles = []
         self.supported_unit = supported_unit
 
@@ -80,6 +84,8 @@ class Grid:
         Tile that is currently selected
     selected_unit:
         Unit that is currently selected
+    sidebar:
+         Object that stores building information
     """
 
     tiles: List[List[Tile]]
@@ -91,8 +97,9 @@ class Grid:
     yoffset: int
     selected_tile: Tile
     selected_unit: Unit
+    sidebar: Sidebar
 
-    def __init__(self, columns: int, rows: int, radius: int, lines: List[List[str]]) -> None:
+    def __init__(self, columns: int, rows: int, radius: int, lines: List[List[str]], sidebar: Sidebar) -> None:
         # Create map tiles
         self.columns = columns
         self.rows = rows
@@ -104,6 +111,7 @@ class Grid:
         self.yoffset = 0
         self.selected_tile = None
         self.selected_unit = None
+        self.sidebar = sidebar
         for _ in range(self.columns):
             self.tiles.append([])
 
@@ -121,7 +129,7 @@ class Grid:
                         new_unit = Unit(lines[index_lines][3])
                     else:
                         new_unit = None
-                    new_tile = Tile(point_list, lines[index_lines][2], False, new_unit)
+                    new_tile = Tile(point_list, lines[index_lines][2], new_unit)
                     self.tiles[x].append(new_tile)
                     if index_lines+1 < len(lines):
                         index_lines += 1
@@ -199,17 +207,21 @@ class Grid:
                 if not tile.is_empty:
                     tile.pan(movement)
 
-    def left_click(self, mouse_grid_location: Tuple[int, int], action_type: str) -> None:
-        clicked_tile = self._find_clicked_tile(mouse_grid_location)
-        if action_type == 'select':
-            self.handel_select(clicked_tile)
-        elif action_type == 'build':
-            self.handel_build(clicked_tile)
+    def left_click(self, mouse_grid_location: Tuple[int, int], mouse_sidebar_location: Optional[int], to_build: Optional[str]) -> Optional[str]:
+        if mouse_sidebar_location is None:
+            clicked_tile = self._find_clicked_tile(mouse_grid_location)
+            if to_build is None:
+                self.handle_select(clicked_tile)
+            else:
+                self.handle_build(clicked_tile, to_build)
+            return None
+        else:
+            return self.sidebar.building_info[mouse_sidebar_location][0]
 
     def right_click(self, mouse_grid_location: Tuple[int, int], action_type: str) -> None:
         pass
 
-    def handel_select(self, clicked_tile: Tile) -> None:
+    def handle_select(self, clicked_tile: Tile) -> None:
         if clicked_tile is not None and self.selected_tile != clicked_tile:
             if clicked_tile.highlighted and self.selected_unit is not None:
                 clicked_tile.supported_unit = self.selected_unit
@@ -228,12 +240,12 @@ class Grid:
             if not tile.is_empty and tile.supported_unit is None:
                 tile.highlighted = True
 
-    def handel_build(self, clicked_tile: Tile) -> None:
+    def handle_build(self, clicked_tile: Tile, to_build: str) -> None:
         if clicked_tile is not None:
-            if not clicked_tile.building and clicked_tile.supported_unit is None:
-                clicked_tile.building = True
-                clicked_tile.land_image = pygame.image.load(
-                    os.path.join(os.path.dirname(__file__), 'images\\' + 'tower_test' + '.png'))
+            if clicked_tile.supported_building is None and clicked_tile.supported_unit is None:
+                new_building = Building(to_build)
+                self.buildings.append(new_building)
+                clicked_tile.supported_building = new_building
 
     def unselect(self) -> None:
         if self.selected_tile is not None:
