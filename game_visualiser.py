@@ -85,12 +85,13 @@ class Visualizer:
         # Draw tile outlines
         hovered_tile = None
         selected_tile = None
-        highlighted_tiles = []
         x = 0
         for sublist in self.grid.tiles:
             y = 0
             for tile in sublist:
                 if not tile.is_empty:
+                    if tile.highlighted:
+                        self.screen.blit(self.highlight_screen, (tile.vertices[0][0] - 30, tile.vertices[0][1]))
                     if tile.selected:
                         selected_tile = tile
                     elif (x, y) == mouse_grid_location and mouse_sidebar_location is None:
@@ -100,14 +101,8 @@ class Visualizer:
                         pygame.draw.lines(self.screen, (0, 0, 0), False, tile.vertices[0:5], 1)
                         pygame.draw.lines(self.screen, (0, 0, 0), False,
                                           [tile.vertices[0], tile.vertices[5], tile.vertices[4]], 1)
-                    if tile.highlighted:
-                        highlighted_tiles.append(tile)
                 y += 1
             x += 1
-
-        for tile in highlighted_tiles:
-            if not tile.is_empty:
-                self.screen.blit(self.highlight_screen, (tile.vertices[0][0] - 30, tile.vertices[0][1]))
 
         if hovered_tile is not None:
             # Use draw lines instead of draw polygon to avoid differently drawn diagonal lines
