@@ -9,7 +9,7 @@ tower_test,sun_test
 2,2,forest,worker_test
 3,0,mountain,worker_test
 3,1,forest,None
-3,2,forest,None
+3,2,spawn,None
 4,0,mountain,None
 4,1,forest,None
 4,2,forest,None

@@ -1,9 +1,10 @@
 import pygame
-from game_map import Grid
+from game_map import Grid, Tile
 from typing import Tuple, Optional
 from game_unit import Unit
 from game_overlay import Sidebar
 import os
+import time
 
 
 class Visualizer:
@@ -22,6 +23,10 @@ class Visualizer:
         !!!!!
     highlight_screen:
         Screen that is slightly transparent
+    sprite_frame:
+        Which frame of the sprite to draw
+    spawn_tile:
+        Tile where the player spawns
     """
 
     width: int
@@ -31,14 +36,18 @@ class Visualizer:
     screen: pygame.Surface
     highlight_screen: pygame.Surface
     highlight_image: pygame.image
+    sprite_frame: int
+    spawn_tile: Tile
 
-    def __init__(self, width: int, height: int, grid: Grid, sidebar: Sidebar) -> None:
+    def __init__(self, width: int, height: int, grid: Grid, sidebar: Sidebar, spawn_tile: Tile) -> None:
         self.game_running = True
         self.width = width
         self.height = height
         self.grid = grid
         self.sidebar = sidebar
         self.screen = pygame.display.set_mode((self.width, self.height))
+        self.sprite_frame = 0
+        self.spawn_tile = spawn_tile
         #self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
         # Create highlight screen
@@ -55,7 +64,8 @@ class Visualizer:
         self.sidebar_background_screen.blit(highlight_image, (0, 0))
         self.sidebar_background_screen.set_alpha(200)
 
-    def render_display(self, mouse_grid_location: Tuple[int, int], mouse_sidebar_location: Optional[int], to_build: Optional[str]) -> None:
+    def render_display(self, mouse_grid_location: Tuple[int, int], mouse_sidebar_location: Optional[int],
+                       to_build: Optional[str], update_animations: bool) -> None:
         """Render the game to the screen
         """
         """
@@ -68,6 +78,11 @@ class Visualizer:
             pygame.image.save(self.screen, 'pygame_hex.png')
             self.go = False
         """
+        if update_animations:
+            if self.sprite_frame == 1:
+                self.sprite_frame = 0
+            else:
+                self.sprite_frame = 1
 
         # Wipe the screen
         pygame.draw.rect(self.screen, (0, 0, 255), (0, 0, self.width, self.height))
@@ -133,3 +148,7 @@ class Visualizer:
         # update the display
         pygame.display.flip()
 
+    def render_spawning(self, frame: int) -> None:
+        image = pygame.image.load(os.path.join(os.path.dirname(__file__), 'images\\sprite_' + str(frame) + '.png'))
+        self.screen.blit(image, (self.spawn_tile.vertices[0][0] - 30, self.spawn_tile.vertices[0][1]))
+        pygame.display.flip()

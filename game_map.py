@@ -27,6 +27,8 @@ class Tile:
         Building on this tile
     supported_unit:
         Unit on this tile
+    animation_sprites:
+        Sprites of the animation playing on the tile
     """
 
     vertices: List[List[int]]
@@ -36,6 +38,7 @@ class Tile:
     highlighted: bool
     supported_building: Optional[Building]
     supported_unit: Optional[Unit]
+    #animation_sprites: List[pygame.image]
 
     def __init__(self, vertices: List[Tuple[int, int]] = None, land_name: str = None, supported_unit: Unit = None,
                  supported_building: Building = None) -> None:
@@ -54,6 +57,7 @@ class Tile:
         self.supported_building = supported_building
         self.adjacent_tiles = []
         self.supported_unit = supported_unit
+        self.animation_sprites = None
 
     def pan(self, movement: Tuple[int, int]) -> None:
         """Update the vertices of a tile after a pan
@@ -86,6 +90,8 @@ class Grid:
         Unit that is currently selected
     sidebar:
          Object that stores building information
+    spawn_tile:
+        Tile where the player spawns
     """
 
     tiles: List[List[Tile]]
@@ -98,6 +104,7 @@ class Grid:
     selected_tile: Tile
     selected_unit: Unit
     sidebar: Sidebar
+    spawn_tile: Tile
 
     def __init__(self, columns: int, rows: int, radius: int, lines: List[List[str]], sidebar: Sidebar) -> None:
         # Create map tiles
@@ -130,6 +137,8 @@ class Grid:
                     else:
                         new_unit = None
                     new_tile = Tile(point_list, lines[index_lines][2], new_unit)
+                    if lines[index_lines][2] == 'spawn':
+                        self.spawn_tile = new_tile
                     self.tiles[x].append(new_tile)
                     if index_lines+1 < len(lines):
                         index_lines += 1
@@ -238,7 +247,7 @@ class Grid:
     def select_unit(self) -> None:
         self.selected_unit = self.selected_tile.supported_unit
         for tile in self.selected_tile.adjacent_tiles:
-            if not tile.is_empty and tile.supported_unit is None:
+            if not tile.is_empty and tile.supported_unit is None and tile.supported_building is None:
                 tile.highlighted = True
 
     def handle_build(self, clicked_tile: Tile, to_build: str) -> None:
@@ -262,3 +271,8 @@ class Grid:
             if not clicked_tile.is_empty:
                 return clicked_tile
         return None
+
+    def set_spawn_building(self) -> None:
+        new_building = Building('spawn_tower')
+        self.spawn_tile.supported_building = new_building
+
