@@ -2,4 +2,4 @@
 
 forked a copy to check out/learn pygame
 
-also contributed sprites and code opinions to the creator
+- just ended up being added as a collaborator on the original project
