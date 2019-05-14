@@ -1,5 +1,3 @@
 # SurfaceLevelDungeon
-
-forked a copy to check out/learn pygame
-
+conquer the world as a dungeon keeper !!!! 
 - just ended up being added as a collaborator on the original project
